@@ -1,7 +1,6 @@
 
 import streamlit as st
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 #plt.style.use('seaborn')
 
@@ -66,7 +65,6 @@ class CampaignsPage():
         self.plot_campaign_sales()
 
 if __name__ =='__main__':
-    import streamlit as st
 
     def choose_camp_no():
         return st.slider('Pick a Campaign', 1, 30) # this must be an integer between 1 and 2500..?

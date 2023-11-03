@@ -73,13 +73,28 @@ class DunnHumbyDataWarehouse:
                                     'coupon_redempt': 2318,
                                     'hh_demographic': 801,
                                     'product': 92353,
-                                    'transaction_data': 2595732} 
+                                    'transaction_data': 2595732,
+                                    
+                                    # gold tables
+                                    'hh_summary' : 801, 
+                                    'daily_campaign_sales' : 17597,} 
         
         # live updating rowcounts from the data lake (post-ingestion)
         self.database_rowcounts = dict()
         ### ping db to find existing rowcount/index for known tables
         self.update_database_rowcounts()
-        pprint.pprint(self.database_rowcounts)
+
+        # check the rowcounts for all tables versus previously known indexes from datasource
+        for existing_table in engine.table_names():
+            try:
+                assert self.datasource_rowcounts[existing_table] == self.update_database_rowcount(existing_table), f"error with table {existing_table}"
+                self.log = f"table {existing_table} is up to date"
+        
+            except BaseException as e:
+                self.log = f"rowcount indexes for {existing_table} don't match"
+                self.log = f"{e}"
+
+        #pprint.pprint(self.database_rowcounts)
 
 
 ### UTILITY FUNCTIONS
@@ -93,13 +108,13 @@ class DunnHumbyDataWarehouse:
         res = cur.fetchall()
         return res
 
-    def return_table(self, query):
-        conn = engine.raw_connection()
-        cur = conn.cursor()
-        cur.execute(self.clean_query(query))
-        colnames = [x[0] for x in cur.description]
-        res = cur.fetchall()
-        return pd.DataFrame(res, columns=colnames)
+    # def return_table(self, query):
+    #     conn = engine.raw_connection()
+    #     cur = conn.cursor()
+    #     cur.execute(self.clean_query(query))
+    #     colnames = [x[0] for x in cur.description]
+    #     res = cur.fetchall()
+    #     return pd.DataFrame(res, columns=colnames)
 
     def update_database_rowcount(self, table_name:str):
         '''call the database to get the count() of rows 
@@ -121,15 +136,15 @@ class DunnHumbyDataWarehouse:
         try:
             con = engine.raw_connection()
             cursor = con.cursor()
-            cursor.execute(f'select * from hh_summary')
+            cursor.execute(f'select * from {table_name}')
             colnames = [x[0] for x in cursor.description]
             res = cursor.fetchall()
+            return pd.DataFrame(res, columns=colnames)
 
         except BaseException as e:
             self.log = f"{str(e)} error in get_existing_rowcount"
             return e
     
-        return pd.DataFrame(res, columns=colnames)
 
 
     def update_database_rowcounts(self):

@@ -185,3 +185,30 @@ class HHSummary(HHSummaryBase):
     class Config:
         orm_mode = True
 
+
+
+
+#    class DailyCampaignSales(Base):
+
+#     __tablename__ = 'daily_campaign_sales'
+#     day = Column(Integer)
+#     sales_value = Column(Float)
+#     campaign_id = Column(Integer)
+
+
+class DailyCampaignSalesBase(BaseModel):
+    index : int
+    day : int
+    sales_value : float
+    campaign_id : int
+
+
+class HHSummaryCreate(HHSummaryBase):
+    pass
+
+class HHSummary(HHSummaryBase):
+    
+    class Config:
+        orm_mode = True
+
+
