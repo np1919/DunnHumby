@@ -1,4 +1,4 @@
-data/
+data/*
 fastapi-app/dunnhumby.db
 *.csv
 
