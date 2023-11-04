@@ -1,13 +1,16 @@
     
-    This project is built to showcase my skills as an aspiring data engineer and Python developer.
-
-    simply run `docker-compose up` in the dunnhumby folder, then navigate to 
+    This project is built to showcase my skills as an aspiring data engineer and Python developer. 
+    I used the same dataset as my bootcamp capstone project.
+    
+    Download the dataset here:
+        https://www.kaggle.com/datasets/frtgnn/dunnhumby-the-complete-journey/data
+            ...and place it in the dunnhumby/fastapi-app/data folder. 
         
+    Once you have the data source, simply run `docker-compose up` in the dunnhumby folder to run three applications:
+
         localhost:8051 -- "coupon campaign performance" interactive visual with streamlit.
         localhost:8052 -- household-level analytics template
         localhost:8000/hh/1 -- underlying endpoint
-
-    ...in your browser to see the three containerized applications running at once. 
 
 ![Alt text](image.png)
 
