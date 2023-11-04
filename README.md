@@ -29,17 +29,25 @@
 ### FILES IN THIS PACKAGE ###
 
 `dunnhumby_data_warehouse.py` holds DunnHumbyDataWarehouse -- a simulated data processing class I wrote to migrate/update the database.
+
     - datasource to database migration processing (in this case simply from static .csv); simulated batch/cron jobs
-    - coordinates data intake to our base truth tables -- `hh_summary` and ``
+    
+    - coordinates data intake to our base truth tables -- `hh_summary` and `daily_hh_spend_by_section` (not demonstrated here)
+    
     - ETL processing
 
 # Database Setup and Functionality
+
 `models.py` holds SQLAlchemy ORM models/database table schemas
+
 `database.py` holds the engine and SessionLocal variables which instantiate and power our SQLALchemy Database
 
 # API Functionality
+
 `schemas.py` for the API transaction definitions; FastAPI/pydantic data models/schemas
+
 `main.py` holds the FastAPI application and defines the API endpoints
+
 `crud.py` holds endpoint functions
 
 # Streamlit Front-Ends
