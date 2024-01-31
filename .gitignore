@@ -1,6 +1,8 @@
 data/*
 fastapi-app/dunnhumby.db
 *.csv
+download-data/
+workbooks/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
