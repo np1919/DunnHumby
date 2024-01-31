@@ -1,0 +1,16 @@
+import streamlit as st
+
+st.title('Transactions EDA')
+st.subheader("Raw Transactions Plots")
+st.image(f'pages/figures/transactions_EDA_1.png')
+st.write("""Looking at sales over time, we can see what looks like a data acquisition issue, leading up to day ~100 or so. This data was truncated from later analysis.""")
+st.subheader("Seasonality of Data")
+st.image(f'pages/figures/transactions_EDA_2.png')
+st.write("""After truncating the data acquisition issue, we observe that the data in our transactions table has a weekly seasonality. Through domain knowledge we deduce that these days represent weekends.""")
+st.image(f'pages/figures/transactions_EDA_3.png')
+st.subheader('Finding Christmas and Thanksgiving')
+st.write("By corroborating the seasonality (saturdays) of our data with outlying data points from our yearly trend (thanksgiving and christmas, respectively -- identical space between years, matching that distance in time); we can determine datetime values for our data...")
+st.image(f'pages/figures/transactions_EDA_4.png')
+st.image(f'pages/figures/transactions_EDA_5.png')
+st.subheader('Placing data in space and time')
+st.write("Through examination of the data and correlations with real-world events, we deduce that this data relates to a timeframe beginning on March 23, 2004 and continuing through the beginning of 2006. Moreover, there was a large snowstorm in _the northeast continental US on February 11 amd 12 of 2006_. We now have datetime values for our data, as well as an idea of it's source.")

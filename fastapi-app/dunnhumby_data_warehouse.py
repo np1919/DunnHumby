@@ -20,7 +20,8 @@ import numpy as np
 
 class DunnHumbyDataWarehouse:
     """
-    DataLake reads from defined data sources in ../data/ (in this case .csv files) and provides a level of control over that process:
+    DataLake reads from defined data sources (in this case, the .csv files 'mounted' in the local directory ../data/; these sources could be flat files from cloud storage, etc. ) and provides a level of control over that process:
+
         - idempotency; 
             - compare row indexes from your data source to the row indexes in your final database
         - availability;
@@ -33,44 +34,36 @@ class DunnHumbyDataWarehouse:
     def __init__(self,
                  data_folder:str="data/",
                  db:Session = get_db()):
-        
+
         self.db=db
         self.data_folder = data_folder
 
         ### instantiate logging...
         self._log = ""
 
-        ### specific data sources/endpoints using your prefix; source URL (or disk data)
-        self.table_names = ['campaign_desc',
-                            'campaign_table',
-                            'causal_data',
-                            'coupon',
-                            'coupon_redempt',
-                            'hh_demographic',
-                            'product',
-                            'transaction_data',
-
-                            'hh_summary',
-                            'daily_campaign_sales',
-                            ]
-
         ### along with a map of your table models (the abstraction layer of SQLALchemy)
-        self.table_models = [models.CampaignDesc,
+
+        self.table_models = [
+                            # source tables
+                            models.CampaignDesc,
                             models.CampaignTable,
                             models.CausalData,
                             models.Coupon,
                             models.CouponRedempt,
                             models.HHDemographic,
                             models.Product,
-                            models.TransactionData
-                            ]
+                            models.TransactionData,
+                            # staging tables
+                            models.HHSummary,
+                            models.DailyHHSpend,
+                            models.DailyCampaignSales,
 
-        ### map the two together for reference
-        self.name_model_map = dict(zip(self.table_names, self.table_models)) 
+                            ]
 
         # hardcoded here for simplicity; 
         # THESE VALUES UPDATE EVERY TIME YOU RUN `self.update_table()`/`self.update_many()`  ~~
-        self.datasource_rowcounts = {'campaign_desc': 30,
+        self.datasource_rowcounts = {#source tables
+                                    'campaign_desc': 30,
                                     'campaign_table': 7208,
                                     'causal_data': 36786524,
                                     'coupon': 124548,
@@ -79,10 +72,15 @@ class DunnHumbyDataWarehouse:
                                     'product': 92353,
                                     'transaction_data': 2595732,
                                     
-                                    # gold tables
+                                    # staging tables
                                     'hh_summary' : 801, 
-                                    'daily_campaign_sales' : 17597,} 
+                                    'daily_hh_spend': 198328,
+                                    'daily_campaign_sales' : 17597,
+
+                                    } 
         
+        # check that you have registered the source and staging models
+        assert len(self.table_models) == len(self.datasource_rowcounts), "Number of Table Models don't match Data Sources"
         # live updating rowcounts from the data lake (post-ingestion)
         self.database_rowcounts = dict()
         ### ping db to find existing rowcount/index for known tables
@@ -91,9 +89,8 @@ class DunnHumbyDataWarehouse:
         # check the rowcounts for all tables versus previously known indexes from datasource
         #table_names = inspect(engine).get_table_names()
 
-
         # hardcoded table names
-        for existing_table in self.table_names:
+        for existing_table in self.database_tables:
             try:
                 assert self.datasource_rowcounts[existing_table] == self.update_database_rowcount(existing_table), f"error with table {existing_table}"
                 self.log = f"table {existing_table} is up to date"
@@ -107,40 +104,50 @@ class DunnHumbyDataWarehouse:
         # output most recent log?
         # with open(f'logs/{dt.datetime.now.utc()[:10]}') as f:
         #     f.writelines(self.log)
-        
+    
+    @property
+    def database_tables(self):
+        return inspect(engine).get_table_names()
+
+    @property
+    def table_names(self):
+        return self.datasource_rowcounts.keys()
+    
+    @property
+    def name_model_map(self):
+        return dict(zip(self.table_names, self.table_models)) 
 
 ### UTILITY FUNCTIONS
     def clean_query(self, query):
-        return " ".join(query.replace('\n', ' ').replace('\t', ' ').split())
-                        
+            return " ".join(query.replace('\n', ' ').replace('\t', ' ').split())    
+    
     def query_db(self, query):
+        # def clean_query(self, query):
+        #     return " ".join(query.replace('\n', ' ').replace('\t', ' ').split())    
         conn = engine.raw_connection()
         cur = conn.cursor()
         cur.execute(self.clean_query(query))
         res = cur.fetchall()
         return res
 
-    # def return_table(self, query):
-    #     conn = engine.raw_connection()
-    #     cur = conn.cursor()
-    #     cur.execute(self.clean_query(query))
-    #     colnames = [x[0] for x in cur.description]
-    #     res = cur.fetchall()
-    #     return pd.DataFrame(res, columns=colnames)
 
-    def get_table(self, table_name:str):
+    def get_table(self, table_name:str, select_cols:str='*'):
+        '''returns a dataframe of the table; fetches columns from cursor description
+        todo: implement with ORM?
+        note that this select statement could be abstracted to include specific columns'''
         try:
             con = engine.raw_connection()
             cursor = con.cursor()
-            cursor.execute(f'select * from {table_name}')
+            cursor.execute(f'select {select_cols} from {table_name}')
             colnames = [x[0] for x in cursor.description]
             res = cursor.fetchall()
             return pd.DataFrame(res, columns=colnames)
-
+        
         except BaseException as e:
-            self.log = f"{str(e)} error in get_existing_rowcount"
+            self.log = f"{str(e)} error in get_table"
             return e
     
+
     def update_database_rowcount(self, table_name:str):
         '''call the database to get the count() of rows 
         return the existing index/rowcount from the database
@@ -154,13 +161,9 @@ class DunnHumbyDataWarehouse:
             self.log = f"{str(e)} error in get_existing_rowcount"
             return e
         
+        # is it bad practice to update value and return in the same function? add some kind of exception handling here?
         self.database_rowcounts[table_name] = res[0][0]
         return res[0][0]
-    
-    @property
-    def database_tables(self):
-        return inspect(engine).get_table_names()
-
 
     def update_database_rowcounts(self):
         '''calls self.get_existing_rowcounts() on each self.table_name'''
@@ -180,6 +183,18 @@ class DunnHumbyDataWarehouse:
         for x in self.table_names:
             self.delete_known_table(x)
 
+    def add_datetime(self, df, column='DAY'):
+        # add datetime values. this should be back-integrated with the data ingestion procedure, now that we have it
+        day1 = dt.datetime(2004, 3, 23) # as derived in transactions notebook; datetime for 'DAY' == 1
+        ineedthismany = df[column].max()
+        last = day1 + dt.timedelta(days=int(ineedthismany))
+        date_range = pd.date_range(day1, last) # date range for our data
+        # map datetime index to DAY; enumerate() indexes from 0, so we add 1
+        date_map = {i+1:x for i, x in enumerate(date_range)}
+        # truncate data
+        df['datetime'] = df[column].map(date_map)
+
+        #return date_map
             
     def update_table(self, table_name:str, db:Session=next(get_db())):
         '''this function could be adapted to conditionally update a table instead of re-writing it/loading it once
@@ -246,7 +261,7 @@ class DunnHumbyDataWarehouse:
         for name in all_names:
             self.update_table(table_name=name, db=db)
 
-        self.log = f"Tables {all_names} have been updated in the data lake."
+        self.log = f"Tables {', '.join(all_names)} have been updated in the data lake."
         self.log = f"***************************************"
 
     ### logger

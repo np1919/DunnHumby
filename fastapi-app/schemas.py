@@ -19,7 +19,7 @@ class CampaignDesc(CampaignDescBase):
         from_attributes = True
 
 
-
+#######################################################
 class CampaignTableBase(BaseModel):
     index : int
     campaign : int
@@ -34,7 +34,7 @@ class CampaignTable(CampaignTableBase):
     class Config:
         from_attributes = True
 
-
+###########################################################
 class CausalDataBase(BaseModel):
     index : int 
     product_id : int
@@ -51,7 +51,7 @@ class CausalData(CausalDataBase):
     class Config:
         from_attributes = True
 
-
+#####################################################################
 class CouponBase(BaseModel):
     index : int
     campaign : int
@@ -66,7 +66,7 @@ class Coupon(CouponBase):
     class Config:
         from_attributes = True
 
-
+#########################################################
 class CouponRedemptBase(BaseModel):
     index : int 
     campaign : int
@@ -82,7 +82,7 @@ class CouponRedempt(CouponRedemptBase):
     class Config:
         from_attributes = True
 
-
+#####################################################
 class HHDemographicBase(BaseModel):
     index : int
     age_desc : str
@@ -102,7 +102,7 @@ class HHDemographic(HHDemographicBase):
     class Config:
         from_attributes = True
 
-
+##########################################################
 class ProductBase(BaseModel):
     index : int
     product_id : int
@@ -121,7 +121,7 @@ class Product(ProductBase):
     class Config:
         from_attributes = True
 
-
+##################################################
 class TransactionDataBase(BaseModel):
     index : int
     household_key : int
@@ -145,6 +145,8 @@ class TransactionData(TransactionDataBase):
     class Config:
         from_attributes = True
 
+
+##############################################################
 class HHSummaryBase(BaseModel):
 
     index : int
@@ -186,29 +188,49 @@ class HHSummary(HHSummaryBase):
         from_attributes = True
 
 
-
-
-#    class DailyCampaignSales(Base):
-
-#     __tablename__ = 'daily_campaign_sales'
-#     day = Column(Integer)
-#     sales_value = Column(Float)
-#     campaign_id = Column(Integer)
-
-
+####################################################
 class DailyCampaignSalesBase(BaseModel):
     index : int
     day : int
     sales_value : float
     campaign_id : int
 
-
-class HHSummaryCreate(HHSummaryBase):
+class DailyCampaignSalesCreate(DailyCampaignSalesBase):
     pass
 
-class HHSummary(HHSummaryBase):
-    
+class DailyCampaignSales(DailyCampaignSalesBase):
+
     class Config:
         from_attributes = True
 
+##########################################################
+        
+class DailyHHSpendBase(BaseModel):
 
+    index : int
+    day : int
+    household_key : int
+    alcohol : float
+    beverages : float
+    concessions : float
+    dairy : float
+    drug : float
+    garden : float
+    grain_goods : float
+    grocery : float
+    home_family : float
+    junk_food : float
+    kitchen :float
+    meat : float
+    misc :float
+    produce : float
+    seasonal : float
+    total_sales : float
+    
+class DailyHHSpendCreate(DailyHHSpendBase):
+    pass
+
+class DailyHHSpend(DailyHHSpendBase):
+
+    class Config:
+        from_attributes = True

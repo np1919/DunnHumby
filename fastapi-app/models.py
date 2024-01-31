@@ -170,6 +170,32 @@ class HHSummary(Base):
     total_sales = Column(Float)
     # last_updated = ??
 
+
+class DailyHHSpend(Base):
+
+    __tablename__ = 'daily_hh_spend'
+    index = Column(Integer, primary_key=True, autoincrement=True, nullable=False, index=True)
+    day = Column(Integer)
+    household_key = Column(Integer)
+    alcohol = Column(Float)
+    beverages = Column(Float)
+    concessions = Column(Float)
+    dairy = Column(Float)
+    drug = Column(Float)
+    garden = Column(Float)
+    grain_goods = Column(Float)
+    grocery = Column(Float)
+    home_family = Column(Float)
+    junk_food = Column(Float)
+    kitchen = Column(Float)
+    meat = Column(Float)
+    misc = Column(Float)
+    produce = Column(Float)
+    seasonal = Column(Float)
+    total_sales = Column(Float)
+
+
+    
 class DailyCampaignSales(Base):
 
     __tablename__ = 'daily_campaign_sales'
@@ -177,6 +203,8 @@ class DailyCampaignSales(Base):
     day = Column(Integer)
     sales_value = Column(Float)
     campaign_id = Column(Integer)
+    datetime = Column(Integer)
+    # datetime = Column(DateTime)
 
 
 # class RecommenderCache(Base):
